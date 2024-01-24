@@ -105,7 +105,7 @@ ggplot(data = yearly_count, mapping = aes(
   y = n,
   group = genus
 )) + geom_line()
-#color each genus
+#color each genus differently
 ggplot(data = yearly_count, mapping = aes(
   x = year,
   y = n,
