@@ -181,7 +181,15 @@ surveys_long %>%
 surveys_complete <- surveys %>% 
   filter(!is.na(weight), !is.na(hindfoot_length), !is.na(sex))
 
+#to create a new csv file
 write_csv(surveys_complete, file = "surveys_complete.csv")
+
+
+
+
+
+
+
 
 
 
