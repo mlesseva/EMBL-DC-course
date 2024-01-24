@@ -101,13 +101,60 @@ surveys %>%
   summarize(mean_weight = mean(weight, na.rm = T), min_weight = min(weight)) %>% 
   arrange((min_weight))
 
+#number of observations
+surveys %>% 
+  count(sex)
+
+surveys %>% 
+  count(sex, species)
+
+surveys %>% 
+  count(sex, species) %>% 
+  arrange(species, desc(n))
+
+surveys_new <- surveys %>% 
+  count(sex, species) %>% 
+  arrange(species, desc(n))
+
+surveys_new <- surveys %>% 
+  count(sex, species) %>% 
+  arrange(species, desc(n)) %>% 
+  View()
+
+#challenge
+
+surveys %>% 
+  count(plot_type)
+
+surveys %>%
+  filter(!is.na(hindfoot_length)) %>% 
+  group_by(species_id) %>% 
+  summarize(mean_hindfoot_length = mean(hindfoot_length),
+            min_hindfoot_length = min(hindfoot_length),
+            max_hindfoot_length = max(hindfoot_length),
+            n = n())
+
+surveys %>% 
+  filter(!is.na(weight)) %>% 
+  group_by(year) %>% 
+  filter(weight == max(weight)) %>%
+  select(year, genus, species_id, weight) %>% 
+  arrange(year)
+#to get rid of duplicates in the data  
+surveys %>% 
+  filter(!is.na(weight)) %>% 
+  group_by(year) %>% 
+  filter(weight == max(weight)) %>%
+  select(year, genus, species_id, weight) %>% 
+  arrange(year) %>% 
+  unique()
+  
 
 
 
 
 
-
-
+  
 
 
 
