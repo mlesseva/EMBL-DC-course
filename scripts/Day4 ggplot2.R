@@ -51,7 +51,7 @@ raw_cts_long %>%
   geom_freqpoly() +
   facet_grid(rows = vars(strain), cols = vars(minute)) +
   scale_x_log10()
-#or
+#or log like this:
 raw_cts_long %>% 
   ggplot(aes(x = log10(cts), colour = replicate)) +
   geom_freqpoly() +
@@ -95,7 +95,7 @@ trans_cts %>%
   geom_abline(colour = "brown")
 
 #to look at correlations of cts across all samples (pairwise); first remove non-numericals
-#creates a matrix
+#creates a matrix in table form
 trans_cts_corr <- trans_cts %>%
   select(-gene) %>% 
   cor(method = "spearman")
@@ -109,6 +109,72 @@ rplot(trans_cts_corr)
 
 rplot(trans_cts_corr) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#compare trans_cts and raw_cts
+summary(raw_cts_long$cts)
+summary(trans_cts_long$cts)
+
+raw_cts %>% 
+  ggplot(aes(x = wt_0_r1, y = wt_0_r2)) +
+  geom_point()
+
+raw_cts %>% 
+  ggplot(aes(x = wt_0_r1 + 1, y = wt_0_r2 + 1)) +
+  geom_point() +
+  scale_x_continuous(trans = "log2") +
+  scale_y_continuous(trans = "log2")
+
+#to space the samples out (use the long table format)
+raw_cts_long %>% 
+  group_by(gene) %>% 
+  summarize(mean_cts = mean(cts), var_cts = var(cts))
+
+raw_cts_long %>% 
+  group_by(gene) %>% 
+  summarize(mean_cts = mean(cts), var_cts = var(cts)) %>% 
+  ggplot(aes(x = mean_cts, y = var_cts)) +
+  geom_point() +
+  geom_abline(colour = "brown") +
+  scale_x_continuous(trans = "log2") +
+  scale_y_continuous(trans = "log2")
+
+#but our data is already transformed
+
+trans_cts_long %>% 
+  group_by(gene) %>% 
+  summarize(mean_cts = mean(cts), var_cts = var(cts)) %>% 
+  ggplot(aes(x = mean_cts, y = var_cts)) +
+  geom_point() +
+  geom_abline(colour = "brown") +
+  scale_x_continuous(trans = "log2") +
+  scale_y_continuous(trans = "log2")
+
+trans_cts_long %>% 
+  group_by(gene) %>% 
+  summarize(mean_cts = mean(cts), var_cts = var(cts)) %>% 
+  ggplot(aes(x = mean_cts, y = var_cts)) +
+  geom_point()
+
+
+#student question
+trans_cts_long %>% 
+  group_by(gene) %>% 
+  summarize(mean_cts = mean(cts), var_cts = var(cts)) %>% 
+  mutate(above_four = var_cts > 4) %>% 
+  ggplot(aes(x = mean_cts, y = var_cts, colour = above_four)) +
+  geom_point()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
