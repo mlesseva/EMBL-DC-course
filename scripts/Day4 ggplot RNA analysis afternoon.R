@@ -85,6 +85,204 @@ ggplot(data = top_loadings) +
                            nudge_y = 0.005, size = 3) +
                  scale_x_continuous(expand = c(0.02, 0.02))
 
+#Day5
+#Execute the whole page again using the Source button
+#store the plot in variable loadings_plot
+
+loadings_plot <- ggplot(data = top_loadings) +
+  geom_segment(aes(x = 0, y = 0, xend = PC1, yend = PC2),
+               arrow = arrow(length = unit(0.1, "in")),
+               color = "brown") +
+  geom_text(aes(x = PC1, y = PC2, label = gene),
+            nudge_y = 0.005, size = 3) +
+  scale_x_continuous(expand = c(0.02, 0.02))
+
+pca_plot <- pc_scores %>% 
+  full_join(sample_info, by ="sample") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = factor(minute), shape = strain)) +
+  geom_point()
+
+#align plots side by side
+library(patchwork)
+(pca_plot | loadings_plot)
+#align one plot above the other
+(pca_plot / loadings_plot)
+
+#to have multiple plots in a figure
+(pca_plot | pca_plot | pca_plot / loadings_plot)
+
+(pca_plot | pca_plot | pca_plot / loadings_plot) +
+  plot_annotation(tag_levels = "A")
+#automated way to make plots instead of manually writing code
+library(ggfortify)
+autoplot(sample_pca)
+
+autoplot(sample_pca, data = sample_info, 
+         colour = "minute", shape = "strain")
+
+#making the tibble from before (with mutate function) can be automated with the tidy function
+library(broom)
+tidy(sample_pca, matrix = "eigenvalues")
+
+tidy(sample_pca, matrix = "loadings")
+
+#Francesco
+
+autoplot(sample_pca,
+         data = sample_info %>% mutate(minute = as.factor(minute)),
+         colour = "minute",
+         shape = "strain")
+
+
+#Differential expression analysis results
+test_results <- read_csv("data_rnaseq/test_result.csv")
+
+test_results
+#gene column -> gene name
+#baseMean column -> normalized expression level of a gene
+#raw read counts
+#log2Fold change column-> amount of change btw two conditions
+#lfcSE -> stanrat error associated with log2Fold change
+#stat column -> stats value computed as log2Fold Change / lfcSE compared to standard normal distribution
+#p-value -> p value associated with change
+#p-adj -> corrected p-value for multiple hypothesis testing
+#comparisons -> multiple comparison group for timepoints
+
+
+#MA (from microarray era) plot
+#challenge
+test_results %>% 
+  ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +
+  geom_point(alpha = 0.1) +
+  facet_wrap(facets = vars(comparison))
+
+#significance testing  
+test_results %>% 
+  mutate(sig = ifelse(padj < 0.01, log2FoldChange, NA)) %>% 
+  ggplot(aes(x= log10(baseMean), y = log2FoldChange)) +
+  geom_point(alpha = 0.1) +
+  geom_point(aes(y = sig), color = "brown", size = 1) +
+  geom_hline(yintercept = 0, colour = "dodgerblue") +
+  facet_wrap(facets = vars(comparison))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
