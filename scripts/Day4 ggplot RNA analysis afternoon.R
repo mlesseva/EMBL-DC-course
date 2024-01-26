@@ -235,17 +235,87 @@ hclust_matrix <- trans_cts %>%
   select(-gene) %>% 
   as.matrix()
 
+#assign rownames
 rownames(hclust_matrix) <- trans_cts$gene
 
 hclust_matrix <- hclust_matrix[candidate_gene, ]
 
 #transpose the z-scores over the rows (because the scale function calculates z-scores over columns), then transpose back (columns into rows, rows into columns)
+#apply scalling to each column of the matrix (genes)
 hclust_matrix <- hclust_matrix %>% 
   t() %>% 
   scale() %>% 
   t()
-#to cheack dimensions
+#to check dimensions
 dim(hclust_matrix)
+
+#calculate pairwise distances btw genes
+gene_dist <- dist(hclust_matrix)
+
+#hierarchical clustering
+gene_hclust <- hclust(gene_dist, method = "complete")
+
+plot(gene_hclust, labels = F)
+abline(h = 10, col = "brown", lwd = 2)
+
+#make clusters based on a cutoff (gene names will be associated with a number)
+cutree(gene_hclust, k = 5)
+
+gene_cluster <- cutree(gene_hclust, k = 5) %>% 
+  enframe() %>% 
+  rename(gene = name, cluster = value)
+
+trans_cts_cluster <- trans_cts_mean %>% 
+  inner_join(gene_cluster, by = "gene")
+
+trans_cts_cluster %>% 
+  ggplot(aes(x = minute, y = mean_cts_scaled)) +
+  geom_line(aes(group = gene)) +
+  facet_grid(cols = vars(cluster), rows = vars(strain)) 
+
+
+dev.off()
+
+
+BiocManager::install("ComplexHeatmap")
+library(ComplexHeatmap)
+
+Heatmap(hclust_matrix, show_row_names = F)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
