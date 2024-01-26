@@ -166,6 +166,138 @@ test_results %>%
   facet_wrap(facets = vars(comparison))
 
 
+ma_plot <- test_results %>% 
+  mutate(sig = ifelse(padj < 0.01, log2FoldChange, NA)) %>% 
+  ggplot(aes(x= log10(baseMean), y = log2FoldChange)) +
+  geom_point(alpha = 0.1) +
+  geom_point(aes(y = sig), color = "brown", size = 1) +
+  geom_hline(yintercept = 0, colour = "dodgerblue") +
+  facet_wrap(facets = vars(comparison))
+
+
+pca_plot <- autoplot(sample_pca,
+         data = sample_info %>% mutate(minute = as.factor(minute)),
+         colour = "minute",
+         shape = "strain")
+
+#combine plots
+(ma_plot | pca_plot)
+
+#Visualizing expression trends; plot candidate genes
+# get candidate genes (padj < 0.01); test_results[, "gene] aka test_results$gene
+
+candidate_gene <- test_results %>% 
+  filter(padj < 0.01) %>% 
+  pull(gene) %>%
+  unique()
+
+#1. get trans_cts_long table
+
+trans_cts_long <- trans_cts %>% 
+  pivot_longer(cols = wt_0_r1:mut_180_r3, names_to = "sample",
+               values_to = "cts") %>% 
+  full_join(sample_info, by = "sample")
+
+#2. filter trans_cts_long for candidate genes and compute mean expression value for each gene and timepoint and genotype
+trans_cts_mean <- trans_cts_long %>% 
+  filter(gene %in% candidate_gene) %>% 
+  group_by(gene, strain, minute) %>% 
+  summarize(mean_cts = mean(cts), nrep = n()) %>% 
+  ungroup()
+
+#3 plot trends
+trans_cts_mean %>% 
+  ggplot(aes(x = minute, y = mean_cts)) +
+  geom_line(aes(group = gene), alpha = 0.3) +
+  facet_grid(rows = vars(strain))
+
+#Scaling data to improve the plot  
+trans_cts_mean <- trans_cts_long %>% 
+  filter(gene %in% candidate_gene) %>% 
+  group_by(gene) %>% 
+  mutate(cts_scaled = (cts - mean(cts)) / sd(cts)) %>% 
+  group_by(gene, strain, minute) %>% 
+  summarize(mean_cts_scaled = mean(cts_scaled), 
+            nrep = n()) %>% 
+  ungroup()
+
+trans_cts_mean %>% 
+  ggplot(aes(x = minute, y = mean_cts_scaled)) +
+  geom_line(aes(group = gene), alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  facet_grid(rows = vars(strain))
+
+#Clustering analysis (supervised vs unsupervised)
+#create a distance matrix of ccounts
+trans_cts <- read_csv("data_rnaseq/counts_transformed.csv")
+
+hclust_matrix <- trans_cts %>% 
+  select(-gene) %>% 
+  as.matrix()
+
+rownames(hclust_matrix) <- trans_cts$gene
+
+hclust_matrix <- hclust_matrix[candidate_gene, ]
+
+#transpose the z-scores over the rows (because the scale function calculates z-scores over columns), then transpose back (columns into rows, rows into columns)
+hclust_matrix <- hclust_matrix %>% 
+  t() %>% 
+  scale() %>% 
+  t()
+#to cheack dimensions
+dim(hclust_matrix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
